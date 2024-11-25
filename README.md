@@ -1,6 +1,6 @@
 # movie_api
 
-FIXME
+A simple clojure api to search the movie database
 
 ## Prerequisites
 

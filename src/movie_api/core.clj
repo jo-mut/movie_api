@@ -7,38 +7,39 @@
    [ring.middleware.json :as js]
    [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
    [ring.middleware.reload :refer [wrap-reload]]
-   [movie-api.routes :as routes]
-   [movie-api.api :as api])
+   [movie-api.routes :as routes])
   (:gen-class))
 
 (defroutes app-routes
   (GET "/" [] routes/echo-route)
+  (GET "/discover" [] (routes/fetch-lists "discover" 1))
+  (GET "/movie/:id" [id] (routes/fetch-details "movie" id))
   (route/not-found "Page not found"))
-
-(defn fetch-api
-  []
-  (api/fetch-content "discover"))
 
 (defn -main
   "Production"
   [& args]
-  (let [port  (Integer/parseInt (or (env :PORT) "3000"))]
+  (let [port  (Integer/parseInt (or (env :PORT) "3000"))
+        host (or (env :HOST) "0.0.0.0")]
     (server/run-server
      (js/wrap-json-params
       (js/wrap-json-response
        (wrap-defaults app-routes api-defaults)))
-     {:port port})
-    (println (str "Running webserver at http:/127.0.0.1:" port "/"))))
+     {:port port
+      :host host})
+    (println (str "Running webserver at http://0.0.0.0:" port "/"))))
 
 
 (defn -dev-main
   "Dev/Test (auto reload watch enabled)"
   [& args]
-  (let [port (Integer/parseInt (env :PORT))]
+  (let [port (Integer/parseInt (env :PORT))
+        host (or (env :HOST) "0.0.0.0")]
     (server/run-server
      (wrap-reload
       (js/wrap-json-params
        (js/wrap-json-response
         (wrap-defaults #'app-routes api-defaults))))
-     {:port port})
-    (println (str "Running webserver at http:/127.0.0.1:" port "/"))))
+     {:port port
+      :host host})
+    (println (str "Running webserver at http://0.0.0.0:" port "/"))))
